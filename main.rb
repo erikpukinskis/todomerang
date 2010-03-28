@@ -4,7 +4,6 @@ require 'haml'
 require 'dm-core'
 require 'sinatra-authentication'
 require 'json'
-require 'ruby-debug'
 
 use Rack::Session::Cookie, :secret => ENV['SESSION_SECRET'] || 'This is a secret key that no one will guess~'
 
@@ -98,6 +97,8 @@ __END__
       #title
         %a{:href => '/'} Todomerang
     = yield
+    #footer
+      = 'Created by <a href="http://snowedin.net">Erik Pukinskis</a> (<a href="http://github.com/erikpukinskis/todomerang">source code</a>)'
 
 @@ index
 - if logged_in?
