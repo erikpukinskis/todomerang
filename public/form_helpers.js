@@ -21,14 +21,3 @@ function add_context_to_select(context) {
   el.inject($('context_id'), 'top');
   el.selected = true;
 }
-
-function select_tab(id) {
-  $$('.pane').each(function(el) {
-    el.removeClass('selected');
-  });
-  $$('.tab').each(function(el) {
-    el.removeClass('selected');
-  });
-  $(id + "_pane").addClass('selected');
-  $(id + "_tab").addClass('selected');
-}

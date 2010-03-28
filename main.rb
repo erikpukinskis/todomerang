@@ -4,8 +4,6 @@ require 'haml'
 require 'dm-core'
 require 'sinatra-authentication'
 require 'json'
-require 'chronic'
-require 'ruby-debug'
 
 use Rack::Session::Cookie, :secret => ENV['SESSION_SECRET'] || 'This is a secret key that no one will guess~'
 
@@ -13,19 +11,8 @@ class Todo
   include DataMapper::Resource
   property :id, Serial
   property :note, String
-  property :time, DateTime
   belongs_to :dm_user
-  has 1, :context
-  attr_accessor :time_description
-
-  before :create, :clean_up_contexts
-
-  def clean_up_contexts
-    if time_description
-      self.context_id = nil
-      self.time = Chronic.parse(time_description)
-    end
-  end
+  belongs_to :context
 end
 
 class Context
@@ -43,14 +30,6 @@ end
 class DmUser
   has n, :todos
   has n, :contexts
-
-  def all_contexts
-    days_with_todos + contexts
-  end
-
-  def days_with_todos
-    []
-  end
 end
 
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/test.db")
@@ -59,14 +38,12 @@ DataMapper.auto_upgrade!
 get '/' do
   if logged_in?
     @contexts = current_user.contexts
-    debugger
   end
   haml :index
 end
 
 post '/contexts' do
   context = Context.create(params.merge({:dm_user_id => current_user.id}))
-  debugger
   context.attributes.to_json
 end
 
@@ -119,7 +96,6 @@ __END__
             %a{:href => '/signup'} Sign up
       #title
         %a{:href => '/'} Todomerang
-    %p= session[:flash]
     = yield
     #footer
       = 'Created by <a href="http://snowedin.net">Erik Pukinskis</a> (<a href="http://github.com/erikpukinskis/todomerang">source code</a>)'
@@ -129,15 +105,8 @@ __END__
   %form{:method => 'post', :action => '/todos'}
     Remind me
     %input{:name => 'note'}
-    #context_chooser
-      %ul#tabs
-        %li#context_tab{:onclick => "select_tab('context');", :class => "selected tab"} Context
-        %li#time_tab{:onclick => "select_tab('time');", :class => "tab"} Time
-      #context_pane{:class => 'selected pane'}
-        when
-        = select_tag(@contexts, 'context_id', :id, :name)
-      #time_pane{:class => 'pane'}
-        %input{:placeholder => 'today', :name => "time_description"}
+    when
+    = select_tag(@contexts, 'context_id', :id, :name)
     %input{:type => 'submit', :value => 'remember'}
   %ul#contexts
     - @contexts.each do |context|
@@ -149,7 +118,6 @@ __END__
 %select{:name => name, :id => name}
   - objects.each do |object|
     %option{:value => object.send(value_param)}= object.send(label_param)
-  %option --
   %option{:onclick => "new_#{name}_option();"} New
 
 @@ context
