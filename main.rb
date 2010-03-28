@@ -11,6 +11,7 @@ class Todo
   include DataMapper::Resource
   property :id, Serial
   property :note, String
+  property :context_id, Integer
   belongs_to :dm_user
   belongs_to :context
 end
@@ -118,6 +119,7 @@ __END__
 %select{:name => name, :id => name}
   - objects.each do |object|
     %option{:value => object.send(value_param)}= object.send(label_param)
+  %option --
   %option{:onclick => "new_#{name}_option();"} New
 
 @@ context
