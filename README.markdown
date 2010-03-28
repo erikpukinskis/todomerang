@@ -1,20 +1,18 @@
-### Erik's App Template
+### Todomerang
 
-This is just a little template I use to get little Sinatra apps up and running.  It's a 
-minimal app that has a database-backed object (with Datamapper) and basic user authentication
-(signing up, logging in, etc).  It installs on Heroku in a snap.
+Todomerang is a todo app that is built around context.
 
-### Demo
+### Try it out
 
-You can see it running at [http://app-template.heroku.com](http://app-template.heroku.com/).
+It's available at [http://todomerang.heroku.com](http://todomerang.heroku.com/).
 
 ### Deployment
 
 To download the code and deploy on heroku, install the heroku gem and do:
 
-    git clone git@github.com:erikpukinskis/template.git your_project_name
-    cd your_project_name
-    heroku create your_project_name --stack bamboo-mri-1.9.1
+    git clone git@github.com:erikpukinskis/todomerang.git
+    cd todomerang
+    heroku create --stack bamboo-mri-1.9.1
     git push heroku master
 
 And you should be running at http://your_project_name.heroku.com. It would
