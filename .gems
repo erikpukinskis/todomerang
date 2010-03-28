@@ -5,3 +5,4 @@ sinatra-authentication
 data_objects
 do_postgres
 json
+chronic
