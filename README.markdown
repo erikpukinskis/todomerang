@@ -15,7 +15,7 @@ To download the code and deploy on heroku, install the heroku gem and do:
     heroku create --stack bamboo-mri-1.9.1
     git push heroku master
 
-And you should be running at http://your_project_name.heroku.com. It would
+And you should be running on whatever url Heroku created for you. It would
 probably be good to set a secret key for your sessions too:
 
     heroku config:add SESSION_SECRET="<put your own random stuff here>"
