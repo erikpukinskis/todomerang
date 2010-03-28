@@ -78,7 +78,7 @@ __END__
 !!!
 %html
   %head
-    %title hello!
+    %title Todomerang!
     %link{:rel => 'stylesheet', :type => 'text/css', :href => '/base.css'}
     %script{:type => 'text/javascript', :src => '/form_helpers.js'}
     %script{:type => 'text/javascript', :src => '/mootools.js'}
