@@ -3,36 +3,73 @@ require 'sinatra'
 require 'haml'
 require 'dm-core'
 require 'sinatra-authentication'
+require 'json'
+require 'ruby-debug'
 
 use Rack::Session::Cookie, :secret => ENV['SESSION_SECRET'] || 'This is a secret key that no one will guess~'
 
-class Something
+class Todo
   include DataMapper::Resource
   property :id, Serial
-  property :stuff, String
-  property :dm_user_id, Integer
+  property :note, String
   belongs_to :dm_user
+  belongs_to :context
+end
+
+class Context
+  include DataMapper::Resource
+  property :id, Serial
+  property :name, String
+  belongs_to :dm_user
+  has n, :todos
+
+  def path
+    "/contexts/#{id}"
+  end
 end
 
 class DmUser
-  has n, :somethings
+  has n, :todos
+  has n, :contexts
 end
 
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/test.db")
 DataMapper.auto_upgrade!
 
 get '/' do
-  @somethings = current_user.somethings
+  if logged_in?
+    @contexts = current_user.contexts
+  end
   haml :index
 end
 
-post '/somethings' do
-  current_user.somethings.create(params)
+post '/contexts' do
+  context = Context.create(params.merge({:dm_user_id => current_user.id}))
+  context.attributes.to_json
+end
+
+post '/todos' do
+  Todo.create(params.merge({:dm_user_id => current_user.id}))
   redirect '/'
+end
+
+get '/contexts/:id' do
+  @context = Context.get(params[:id])
+  @todos = @context.todos
+  haml :context
 end
 
 def name
   current_user.email.split("@")[0]
+end
+
+def select_tag(objects, name, value_param, label_param)
+  haml :select_tag, :locals => {
+    :objects => objects, 
+    :name => name, 
+    :value_param => value_param, 
+    :label_param => label_param
+  }, :layout => false
 end
 
 __END__
@@ -44,6 +81,8 @@ __END__
   %head
     %title hello!
     %link{:rel => 'stylesheet', :type => 'text/css', :href => '/base.css'}
+    %script{:type => 'text/javascript', :src => '/form_helpers.js'}
+    %script{:type => 'text/javascript', :src => '/mootools.js'}
   %body
     #top_bar
       %ul#account_links
@@ -56,16 +95,34 @@ __END__
             %a{:href => '/login'} Log in
           %li
             %a{:href => '/signup'} Sign up
-      #title Name goes here
+      #title
+        %a{:href => '/'} Todomerang
     = yield
 
 @@ index
 - if logged_in?
-  %form{:method => 'post', :action => '/somethings'}
-    %input{:name => 'stuff'}
-    %input{:type => 'submit', :value => 'save'}
-  %ul
-    - @somethings.each do |thing|
-      %li= thing.stuff
+  %form{:method => 'post', :action => '/todos'}
+    Remind me
+    %input{:name => 'note'}
+    when
+    = select_tag(@contexts, 'context_id', :id, :name)
+    %input{:type => 'submit', :value => 'remember'}
+  %ul#contexts
+    - @contexts.each do |context|
+      %a{:href => context.path}= context.name
 - else
   %p Sign up to post stuff!
+
+@@ select_tag
+%select{:name => name, :id => name}
+  - objects.each do |object|
+    %option{:value => object.send(value_param)}= object.send(label_param)
+  %option{:onclick => "new_#{name}_option();"} New
+
+@@ context
+%h1= @context.name
+%ul
+- @todos.each do |todo|
+  %li
+    %input{:type => 'checkbox', :id => "todo_#{todo.id}"}
+    %label{:for => "todo_#{todo.id}"}= todo.note
