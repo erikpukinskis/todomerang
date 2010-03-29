@@ -10,7 +10,7 @@ It's available at [http://todomerang.heroku.com](http://todomerang.heroku.com/).
 
 To download the code and deploy on heroku, install the heroku gem and do:
 
-    git clone git@github.com:erikpukinskis/todomerang.git
+    git clone git://github.com/erikpukinskis/todomerang.git
     cd todomerang
     heroku create --stack bamboo-mri-1.9.1
     git push heroku master
