@@ -4,6 +4,9 @@ require 'haml'
 require 'dm-core'
 require 'sinatra-authentication'
 require 'json'
+require 'chronic'
+require 'ruby-debug'
+require 'activesupport'
 
 use Rack::Session::Cookie, :secret => ENV['SESSION_SECRET'] || 'This is a secret key that no one will guess~'
 
@@ -12,8 +15,17 @@ class Todo
   property :id, Serial
   property :note, String
   property :context_id, Integer
+  property :time, DateTime
+  attr_accessor :time_description
   belongs_to :dm_user
-  belongs_to :context
+#  has 1, :context
+  before :create, :parse_time
+
+  def parse_time
+    if time_description
+      self.time = Chronic.parse(time_description)
+    end
+  end
 end
 
 class Context
@@ -31,6 +43,23 @@ end
 class DmUser
   has n, :todos
   has n, :contexts
+
+  def days_with_todos
+    todos.inject({}) do |days, todo|
+      if todo.time
+        key = todo.time.to_time.to_date_string
+        days[key] ||= []
+        days[key] << todo
+      end
+      days
+    end.sort
+  end
+end
+
+class Time
+  def to_date_string
+    strftime("%Y%m%d")
+  end
 end
 
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/test.db")
@@ -39,6 +68,7 @@ DataMapper.auto_upgrade!
 get '/' do
   if logged_in?
     @contexts = current_user.contexts
+    @days = current_user.days_with_todos
   end
   haml :index
 end
@@ -49,7 +79,9 @@ post '/contexts' do
 end
 
 post '/todos' do
-  Todo.create(params.merge({:dm_user_id => current_user.id}))
+  params["context_id"] = nil if params["context_id"] == 'nil'
+  params["dm_user_id"] = current_user.id
+  t = Todo.create(params)
   redirect '/'
 end
 
@@ -70,6 +102,17 @@ def select_tag(objects, name, value_param, label_param)
     :value_param => value_param, 
     :label_param => label_param
   }, :layout => false
+end
+
+def fancy_date(date_string)
+  time = Time.parse(date_string)
+  if time.to_date_string == Time.now.to_date_string
+    "Today"
+  elsif time < Date.today + 2.days
+    "Tomorrow"
+  else
+    time.strftime("%-1m/%-1d")
+  end
 end
 
 __END__
@@ -108,10 +151,16 @@ __END__
     %input{:name => 'note'}
     when
     = select_tag(@contexts, 'context_id', :id, :name)
+    or time is
+    %input{:name => 'time_description'}
     %input{:type => 'submit', :value => 'remember'}
   %ul#contexts
+    - @days.each do |date,todo|
+      %li
+        %a{:href => "/days/#{date}"}= fancy_date(date)
     - @contexts.each do |context|
-      %a{:href => context.path}= context.name
+      %li
+        %a{:href => context.path}= context.name
 - else
   %p Sign up to post stuff!
 
@@ -119,7 +168,7 @@ __END__
 %select{:name => name, :id => name}
   - objects.each do |object|
     %option{:value => object.send(value_param)}= object.send(label_param)
-  %option --
+  %option{:value => 'nil', :selected => true} --
   %option{:onclick => "new_#{name}_option();"} New
 
 @@ context
