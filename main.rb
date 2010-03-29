@@ -24,6 +24,11 @@ class Todo
   belongs_to :dm_user
 #  has 1, :context
   before :create, :parse_time
+  before :create, :set_default_context
+
+  def set_default_context
+    self.context_id ||= 0
+  end
 
   def parse_time
     if time_description
