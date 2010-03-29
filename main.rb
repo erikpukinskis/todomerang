@@ -17,7 +17,7 @@ use Rack::Session::Cookie, :secret => ENV['SESSION_SECRET'] || 'This is a secret
 class Todo
   include DataMapper::Resource
   property :id, Serial
-  property :note, String, :length => 255
+  property :memo, Text
   property :context_id, Integer
   property :time, DateTime
   attr_accessor :time_description
@@ -181,7 +181,7 @@ __END__
 - if logged_in?
   %form{:method => 'post', :action => '/todos'}
     Remind me
-    %input{:name => 'note'}
+    %input{:name => 'memo'}
     when
     = select_tag(@contexts, 'context_id', :id, :name)
     or time is
@@ -213,4 +213,4 @@ __END__
 - @todos.each do |todo|
   %li
     %input{:type => 'checkbox', :id => "todo_#{todo.id}"}
-    %label{:for => "todo_#{todo.id}"}= todo.note
+    %label{:for => "todo_#{todo.id}"}= todo.memo
