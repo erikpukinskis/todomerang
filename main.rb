@@ -7,12 +7,17 @@ require 'json'
 require 'chronic'
 require 'active_support'
 
+def d
+  require 'ruby-debug'
+  debugger
+end
+
 use Rack::Session::Cookie, :secret => ENV['SESSION_SECRET'] || 'This is a secret key that no one will guess~'
 
 class Todo
   include DataMapper::Resource
   property :id, Serial
-  property :note, String
+  property :note, Text
   property :context_id, Integer
   property :time, DateTime
   attr_accessor :time_description
