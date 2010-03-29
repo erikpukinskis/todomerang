@@ -6,4 +6,4 @@ data_objects
 do_postgres
 json
 chronic
-active_support
+rails
