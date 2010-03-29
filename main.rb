@@ -17,7 +17,6 @@ use Rack::Session::Cookie, :secret => ENV['SESSION_SECRET'] || 'This is a secret
 class Todo
   include DataMapper::Resource
   property :id, Serial
-  property :note, Text
   property :nota, Text
   property :context_id, Integer
   property :time, DateTime
