@@ -182,7 +182,7 @@ __END__
 - if logged_in?
   %form{:method => 'post', :action => '/todos'}
     Remind me
-    %input{:name => 'note'}
+    %input{:name => 'nota'}
     when
     = select_tag(@contexts, 'context_id', :id, :name)
     or time is
@@ -214,4 +214,4 @@ __END__
 - @todos.each do |todo|
   %li
     %input{:type => 'checkbox', :id => "todo_#{todo.id}"}
-    %label{:for => "todo_#{todo.id}"}= todo.note
+    %label{:for => "todo_#{todo.id}"}= todo.nota
