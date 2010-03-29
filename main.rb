@@ -18,6 +18,7 @@ class Todo
   include DataMapper::Resource
   property :id, Serial
   property :note, Text
+  property :nota, Text
   property :context_id, Integer
   property :time, DateTime
   attr_accessor :time_description
