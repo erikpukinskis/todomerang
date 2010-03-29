@@ -6,7 +6,7 @@ require 'sinatra-authentication'
 require 'json'
 require 'chronic'
 require 'ruby-debug'
-require 'activesupport'
+require 'active_support'
 
 use Rack::Session::Cookie, :secret => ENV['SESSION_SECRET'] || 'This is a secret key that no one will guess~'
 
@@ -58,7 +58,36 @@ end
 
 class Time
   def to_date_string
-    strftime("%Y%m%d")
+    strftime("%Y-%m-%d")
+  end
+
+  def fancy_date
+    if to_date_string == Time.now.to_date_string
+      "Today"
+    elsif self < Date.today + 2.days
+      "Tomorrow"
+    elsif self < Date.today + 6.days
+      strftime("%A")
+    else
+      strftime("%-1m/%-1d")
+    end
+  end
+end
+
+class Day
+  attr_accessor :time, :user
+
+  def initialize(user, string)
+    self.time = Time.parse(string)
+    self.user = user
+  end
+
+  def name
+    time.fancy_date
+  end
+
+  def todos
+    user.todos(:time.gt => time + 0.hours, :time.lt => time + 24.hours)
   end
 end
 
@@ -91,6 +120,12 @@ get '/contexts/:id' do
   haml :context
 end
 
+get '/days/:id' do
+  @context = Day.new(current_user, params[:id])
+  @todos = @context.todos
+  haml :context
+end
+
 def name
   current_user.email.split("@")[0]
 end
@@ -106,13 +141,7 @@ end
 
 def fancy_date(date_string)
   time = Time.parse(date_string)
-  if time.to_date_string == Time.now.to_date_string
-    "Today"
-  elsif time < Date.today + 2.days
-    "Tomorrow"
-  else
-    time.strftime("%-1m/%-1d")
-  end
+  time.fancy_date
 end
 
 __END__
@@ -154,13 +183,16 @@ __END__
     or time is
     %input{:name => 'time_description'}
     %input{:type => 'submit', :value => 'remember'}
-  %ul#contexts
-    - @days.each do |date,todo|
-      %li
-        %a{:href => "/days/#{date}"}= fancy_date(date)
+  %h2 What's happening?  
+  %ul#days.contexts
     - @contexts.each do |context|
       %li
         %a{:href => context.path}= context.name
+  %h2 Future stuff
+  %ul.contexts
+    - @days.each do |date,todo|
+      %li
+        %a{:href => "/days/#{date}"}= fancy_date(date)
 - else
   %p Sign up to post stuff!
 

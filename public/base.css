@@ -24,3 +24,23 @@
 #footer {
   margin-top: 6em;
 }
+
+.contexts {
+  list-style: none;
+  padding: 0;
+}
+
+.contexts li {
+  display: inline
+}
+
+.contexts li a {
+  font-size: 2em;
+  color: white;
+  text-decoration: none;
+  background-color: orange;
+}
+
+#days li a {
+  background-color: cyan;
+}
