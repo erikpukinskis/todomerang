@@ -65,7 +65,7 @@ class DmUser
   end
 end
 
-class Time
+module DateStuff
   def to_date_string
     strftime("%Y-%m-%d")
   end
@@ -81,6 +81,14 @@ class Time
       strftime("%-1m/%-1d")
     end
   end
+end
+
+class DateTime
+  include DateStuff
+end
+
+class Time
+  include DateStuff
 end
 
 class Day
