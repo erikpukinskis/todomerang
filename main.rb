@@ -5,7 +5,6 @@ require 'dm-core'
 require 'sinatra-authentication'
 require 'json'
 require 'chronic'
-require 'ruby-debug'
 require 'active_support'
 
 use Rack::Session::Cookie, :secret => ENV['SESSION_SECRET'] || 'This is a secret key that no one will guess~'
